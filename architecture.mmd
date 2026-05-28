@@ -1,0 +1,71 @@
+graph TD
+    subgraph "邊緣層 (Edge)"
+        NANO["Arduino Nano<br/>(USB Serial / COM Port)"]
+    end
+
+    subgraph "網關層 (Gateway)"
+        BRIDGE["bridge.py<br/>(MQTT ↔ Serial Bridge)"]
+    end
+
+    subgraph "雲端層 (MQTT Broker)"
+        BROKER["HiveMQ Cloud<br/>MQTT Broker"]
+    end
+
+    subgraph "Discord Bot（入口）"
+        BOT["bot.py<br/>(MonitorBot)"]
+        BOTBASE["core/bot_base.py<br/>(BotBase 框架基底)"]
+    end
+
+    subgraph "核心模組 (core/)"
+        CONFIG["config.py<br/>設定與常數"]
+        GUILDSTATE["core/guild_state.py<br/>GuildState (獨立狀態管理)"]
+        DB["core/db.py<br/>SQLite 資料庫"]
+        PERM["core/permissions.py<br/>權限系統"]
+        RATELIMIT["core/ratelimit.py<br/>速率限制"]
+        ERRORS["core/errors.py<br/>錯誤處理"]
+        LOGGING["core/logging_setup.py<br/>企業級日誌"]
+    end
+
+    subgraph "Discord Cogs（功能）"
+        DASH["cogs/dashboard.py<br/>DashboardCog"]
+        ALERT["cogs/alert.py<br/>AlertCog"]
+        CMD["cogs/commands.py<br/>CommandsCog"]
+        SHOW["cogs/showcase.py<br/>ShowcaseCog"]
+        BUILTINS["cogs/builtins/<br/>admin.py, help.py, guild_config.py"]
+    end
+
+    subgraph "UI 元件"
+        VIEWS["ui/views.py<br/>StatusView, AlertView 等"]
+    end
+
+    NANO -->|Serial USB| BRIDGE
+    BRIDGE -->|MQTT Publish| BROKER
+    BROKER -->|MQTT Subscribe| BOT
+
+    BOT -->|繼承| BOTBASE
+    BOTBASE --> CONFIG
+    BOTBASE --> GUILDSTATE
+    BOTBASE --> DB
+    BOTBASE --> PERM
+    BOTBASE --> RATELIMIT
+    BOTBASE --> ERRORS
+    BOTBASE --> LOGGING
+
+    BOT -->|auto-scan cogs/| DASH
+    BOT -->|auto-scan cogs/| ALERT
+    BOT -->|auto-scan cogs/| CMD
+    BOT -->|auto-scan cogs/| SHOW
+    BOT -->|auto-scan cogs/builtins/| BUILTINS
+
+    DASH --> GUILDSTATE
+    DASH --> VIEWS
+    ALERT --> GUILDSTATE
+    ALERT --> VIEWS
+    CMD --> GUILDSTATE
+    CMD --> VIEWS
+    SHOW --> VIEWS
+
+    BROKER -->|MQTT callback| BOT
+    BOT -->|廣播至所有 Guild| DASH
+    BOT -->|廣播至所有 Guild| ALERT
+    BOT -->|delegate| ALERT

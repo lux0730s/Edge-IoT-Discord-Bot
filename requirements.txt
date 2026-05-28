@@ -1,0 +1,13 @@
+# ═══════════════════════════════════════════════
+# Edge IoT Discord Bot Framework — 依賴套件
+# ═══════════════════════════════════════════════
+# 安裝方式：pip install -r requirements.txt
+
+# ── Discord Bot 框架 ──
+discord.py>=2.4.0
+
+# ── MQTT ──
+paho-mqtt>=2.0.0
+
+# ── 環境變數管理 ──
+python-dotenv>=1.0.0
